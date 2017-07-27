@@ -1,7 +1,4 @@
-# gogit 
-## A tool to let you commit to open source while still at work
-
-___---
+# gogit - A tool to keep committed to open source while at work
 ## Todo
 * Set up basic cli interaction.
 X 1. add command to show help / options
