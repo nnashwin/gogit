@@ -3,8 +3,21 @@ package main
 import (
 	"fmt"
 	"github.com/urfave/cli"
+	"gopkg.in/AlecAivazis/survey.v1"
 	"os"
 )
+
+var qs = []*survey.Question{
+	{
+		Name:     "username",
+		Prompt:   &survey.Input{Message: "Please enter your github username or email"},
+		Validate: survey.Required,
+	},
+	{
+		Name:   "password",
+		Prompt: &survey.Input{Message: "Please enter your github password or api token"},
+	},
+}
 
 func main() {
 	app := cli.NewApp()
@@ -19,6 +32,14 @@ func main() {
 			Name:  "addUser",
 			Usage: "add a github user account",
 			Action: func(c *cli.Context) error {
+				userInfo, err := GetUserInput(qs)
+				if err != nil {
+					fmt.Printf("obtaining user account info encountered an error")
+					fmt.Printf("%+v", err)
+					return nil
+				}
+
+				fmt.Printf("%+v", userInfo)
 				return nil
 			},
 		},
