@@ -32,14 +32,19 @@ func main() {
 			Name:  "addUser",
 			Usage: "add a github user account",
 			Action: func(c *cli.Context) error {
-				userInfo, err := GetUserInput(qs)
+				answers := struct {
+					Username string
+					Password string
+				}{}
+
+				err := survey.Ask(qs, &answers)
 				if err != nil {
 					fmt.Printf("obtaining user account info encountered an error")
 					fmt.Printf("%+v", err)
 					return nil
 				}
 
-				fmt.Printf("%+v", userInfo)
+				fmt.Printf("username: %s; password: %s", answers.Username, answers.Password)
 				return nil
 			},
 		},
