@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/mitchellh/go-homedir"
 	"github.com/urfave/cli"
 	"gopkg.in/AlecAivazis/survey.v1"
 	"os"
@@ -17,6 +18,11 @@ var qs = []*survey.Question{
 		Name:   "password",
 		Prompt: &survey.Password{Message: "Please enter your github password or api token"},
 	},
+}
+
+func createCredDir(path string) (err error) {
+	err = os.Mkdir(path, os.FileMode(0522))
+	return
 }
 
 func main() {
@@ -41,6 +47,14 @@ func main() {
 				if err != nil {
 					fmt.Printf("obtaining user account info encountered an error")
 					fmt.Printf("%+v", err)
+					return nil
+				}
+
+				homeDir, err := homedir.Dir()
+
+				err = createCredDir(homeDir + "/.gogit")
+				if err != nil {
+					fmt.Printf("creating a directory encountered an error")
 					return nil
 				}
 
