@@ -1,12 +1,12 @@
 package main
 
 import (
-	"crypto/sha1"
+	"encoding/json"
 	"fmt"
 	"github.com/mitchellh/go-homedir"
 	"github.com/urfave/cli"
 	"gopkg.in/AlecAivazis/survey.v1"
-	"io"
+	"io/ioutil"
 	"os"
 )
 
@@ -22,9 +22,31 @@ var qs = []*survey.Question{
 	},
 }
 
+func checkErr(e error) {
+	if e != nil {
+		panic(e)
+	}
+}
+
+func fileDoesExist(path string) (bool, error) {
+	_, err := os.Stat(path)
+	if err == nil {
+		return true, nil
+	}
+
+	if os.IsNotExist(err) {
+		return false, nil
+	}
+
+	return true, err
+}
+
 func createCredDirIfNotExist(path string) (err error) {
-	if _, err = os.Stat(path); os.IsNotExist(err) {
-		err = os.Mkdir(path, os.FileMode(0522))
+	doesExist, err := fileDoesExist(path)
+	checkErr(err)
+
+	if doesExist == false {
+		err = os.Mkdir(path, 0766)
 	}
 	return
 }
@@ -40,7 +62,7 @@ func main() {
 	app.Commands = []cli.Command{
 		{
 			Name:  "addUser",
-			Usage: "add a github user account",
+			Usage: "add a new github user account",
 			Action: func(c *cli.Context) error {
 				answers := struct {
 					Username string
@@ -48,27 +70,24 @@ func main() {
 				}{}
 
 				err := survey.Ask(qs, &answers)
-				if err != nil {
-					fmt.Printf("obtaining user account info encountered an error")
-					fmt.Printf("%+v", err)
-					return nil
-				}
+				checkErr(err)
 
 				homeDir, err := homedir.Dir()
+				checkErr(err)
 
-				err = createCredDirIfNotExist(homeDir + "/.gogit")
-				if err != nil {
-					fmt.Printf("creating a directory encountered an error")
-					return nil
-				}
+				dirString := homeDir + "/.gogit"
+				fileString := dirString + "/creds.json"
 
-				h := sha1.New()
-				io.WriteString(h, "Sha1")
-				io.WriteString(h, "Sha2")
+				err = createCredDirIfNotExist(dirString)
+				checkErr(err)
 
-				fmt.Printf("% x", h.Sum(nil))
+				b, err := json.Marshal(answers)
+				checkErr(err)
 
-				fmt.Printf("username: %s; password: %s", answers.Username, answers.Password)
+				ioutil.WriteFile(fileString, b, 0766)
+
+				checkErr(err)
+
 				return nil
 			},
 		},
