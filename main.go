@@ -15,7 +15,7 @@ var qs = []*survey.Question{
 	},
 	{
 		Name:   "password",
-		Prompt: &survey.Input{Message: "Please enter your github password or api token"},
+		Prompt: &survey.Password{Message: "Please enter your github password or api token"},
 	},
 }
 
