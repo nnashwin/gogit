@@ -1,10 +1,12 @@
 package main
 
 import (
+	"crypto/sha1"
 	"fmt"
 	"github.com/mitchellh/go-homedir"
 	"github.com/urfave/cli"
 	"gopkg.in/AlecAivazis/survey.v1"
+	"io"
 	"os"
 )
 
@@ -20,8 +22,10 @@ var qs = []*survey.Question{
 	},
 }
 
-func createCredDir(path string) (err error) {
-	err = os.Mkdir(path, os.FileMode(0522))
+func createCredDirIfNotExist(path string) (err error) {
+	if _, err = os.Stat(path); os.IsNotExist(err) {
+		err = os.Mkdir(path, os.FileMode(0522))
+	}
 	return
 }
 
@@ -52,11 +56,17 @@ func main() {
 
 				homeDir, err := homedir.Dir()
 
-				err = createCredDir(homeDir + "/.gogit")
+				err = createCredDirIfNotExist(homeDir + "/.gogit")
 				if err != nil {
 					fmt.Printf("creating a directory encountered an error")
 					return nil
 				}
+
+				h := sha1.New()
+				io.WriteString(h, "Sha1")
+				io.WriteString(h, "Sha2")
+
+				fmt.Printf("% x", h.Sum(nil))
 
 				fmt.Printf("username: %s; password: %s", answers.Username, answers.Password)
 				return nil
