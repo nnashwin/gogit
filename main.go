@@ -8,6 +8,7 @@ import (
 	"gopkg.in/AlecAivazis/survey.v1"
 	"io/ioutil"
 	"os"
+	"path"
 )
 
 var qs = []*survey.Question{
@@ -41,6 +42,19 @@ func fileDoesExist(path string) (bool, error) {
 	return true, err
 }
 
+func createDirIfNotExist(path string) (doesExist bool, err error) {
+	doesExist, err = fileDoesExist(path)
+
+	if doesExist == true {
+		return
+	}
+
+	err = os.Mkdir(path, 0766)
+	checkErr(err)
+
+	return
+}
+
 func createCredDirIfNotExist(path string) (err error) {
 	doesExist, err := fileDoesExist(path)
 	checkErr(err)
@@ -61,8 +75,9 @@ func main() {
 
 	app.Commands = []cli.Command{
 		{
-			Name:  "addUser",
-			Usage: "add a new github user account",
+			Name:    "addUser",
+			Aliases: []string{"au"},
+			Usage:   "add a new github user account",
 			Action: func(c *cli.Context) error {
 				answers := struct {
 					Username string
@@ -93,10 +108,23 @@ func main() {
 		},
 
 		{
-			Name:  "createDir",
-			Usage: "create a new git repo with your current stored git profile",
+			Name:    "createDir",
+			Aliases: []string{"cd"},
+			Usage:   "create a new git repo with your current stored git profile",
 			Action: func(c *cli.Context) error {
 				fmt.Println("Check out args: ", c.Args().First())
+
+				ex, err := os.Executable()
+				checkErr(err)
+
+				exPath := path.Dir(ex)
+
+				fmt.Println(exPath)
+
+				doesExist, err := createDirIfNotExist(exPath + "/" + c.Args().First())
+				if doesExist == true {
+					fmt.Errorf("That directory already exists.  Please either delete the directory or try again")
+				}
 
 				return nil
 			},
