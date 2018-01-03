@@ -91,6 +91,16 @@ func main() {
 				return nil
 			},
 		},
+
+		{
+			Name:  "createDir",
+			Usage: "create a new git repo with your current stored git profile",
+			Action: func(c *cli.Context) error {
+				fmt.Println("Check out args: ", c.Args().First())
+
+				return nil
+			},
+		},
 	}
 
 	app.Run(os.Args)
