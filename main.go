@@ -8,6 +8,7 @@ import (
 	"gopkg.in/AlecAivazis/survey.v1"
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"path"
 )
 
@@ -112,19 +113,27 @@ func main() {
 			Aliases: []string{"cd"},
 			Usage:   "create a new git repo with your current stored git profile",
 			Action: func(c *cli.Context) error {
-				fmt.Println("Check out args: ", c.Args().First())
-
+				// get current path
 				ex, err := os.Executable()
 				checkErr(err)
-
 				exPath := path.Dir(ex)
 
-				fmt.Println(exPath)
+				// create path from the current path + arguments
+				dirPath := exPath + "/" + c.Args().First()
 
-				doesExist, err := createDirIfNotExist(exPath + "/" + c.Args().First())
+				doesExist, err := createDirIfNotExist(dirPath)
 				if doesExist == true {
-					fmt.Errorf("That directory already exists.  Please either delete the directory or try again")
+					fmt.Println("That directory already exists.  Please either delete the directory or try again")
+					return nil
 				}
+
+				err = os.Chdir(dirPath)
+				checkErr(err)
+
+				cmd := exec.Command("git", "init")
+
+				_, err = cmd.Output()
+				checkErr(err)
 
 				return nil
 			},
