@@ -12,6 +12,8 @@ import (
 	"path"
 )
 
+var useGlobalGitInfo = true
+
 var qs = []*survey.Question{
 	{
 		Name:     "username",
@@ -66,6 +68,30 @@ func createCredDirIfNotExist(path string) (err error) {
 	return
 }
 
+func readFileIfExist(path string) (content []byte) {
+	// error handles later
+	doesExist, _ := fileDoesExist(path)
+
+	if doesExist == true {
+		content, err := ioutil.ReadFile(path)
+		checkErr(err)
+
+		return content
+	}
+
+	return
+}
+
+var Creds = struct {
+	MainProfile Profile                `json: "mainProfile"`
+	Profiles    map[string]interface{} `json: "profiles"`
+}{}
+
+type Profile struct {
+	Username string `json: username`
+	Password string `json: password`
+}
+
 func main() {
 	app := cli.NewApp()
 
@@ -80,10 +106,8 @@ func main() {
 			Aliases: []string{"au"},
 			Usage:   "add a new github user account",
 			Action: func(c *cli.Context) error {
-				answers := struct {
-					Username string
-					Password string
-				}{}
+				var nilProfile = Profile{}
+				answers := Profile{}
 
 				err := survey.Ask(qs, &answers)
 				checkErr(err)
@@ -97,12 +121,27 @@ func main() {
 				err = createCredDirIfNotExist(dirString)
 				checkErr(err)
 
-				b, err := json.Marshal(answers)
+				content := readFileIfExist(fileString)
+
+				err = json.Unmarshal(content, &Creds)
+				checkErr(err)
+
+				fmt.Printf("%+v", Creds)
+
+				if Creds.MainProfile == nilProfile {
+					Creds.MainProfile = answers
+				}
+
+				if Creds.Profiles == nil {
+					Creds.Profiles = make(map[string]interface{})
+				}
+
+				Creds.Profiles[answers.Username] = answers
+
+				b, err := json.Marshal(Creds)
 				checkErr(err)
 
 				ioutil.WriteFile(fileString, b, 0766)
-
-				checkErr(err)
 
 				return nil
 			},
@@ -135,6 +174,24 @@ func main() {
 				_, err = cmd.Output()
 				checkErr(err)
 
+				return nil
+			},
+		},
+
+		{
+			Name:    "toggleGlobal",
+			Aliases: []string{"tg"},
+			Usage:   "toggles whether or not to use the global git when creating a directory",
+			Action: func(c *cli.Context) error {
+				// homeDir, err := homedir.Dir()
+				// checkErr(err)
+
+				// dirString := homeDir + "/.gogit"
+				// fileString := dirString + "/creds.json"
+
+				// fmt.Println(useGlobalGitInfo)
+				// useGlobalGitInfo = !useGlobalGitInfo
+				// fmt.Println(useGlobalGitInfo)
 				return nil
 			},
 		},
