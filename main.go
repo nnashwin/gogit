@@ -12,9 +12,13 @@ import (
 	"path"
 )
 
-var useGlobalGitInfo = true
+var gitInfoPath = ".git/config"
 
 var qs = []*survey.Question{
+	{
+		Name:   "name",
+		Prompt: &survey.Input{Message: "Please enter the name associated with the account"},
+	},
 	{
 		Name:     "username",
 		Prompt:   &survey.Input{Message: "Please enter your github username or email"},
@@ -88,6 +92,7 @@ var Creds = struct {
 }{}
 
 type Profile struct {
+	Name     string `json: name`
 	Username string `json: username`
 	Password string `json: password`
 }
@@ -126,8 +131,7 @@ func main() {
 				err = json.Unmarshal(content, &Creds)
 				checkErr(err)
 
-				fmt.Printf("%+v", Creds)
-
+				// If MainProfile doesn't exist, make the profile the MainProfile
 				if Creds.MainProfile == nilProfile {
 					Creds.MainProfile = answers
 				}
@@ -179,19 +183,18 @@ func main() {
 		},
 
 		{
-			Name:    "toggleGlobal",
-			Aliases: []string{"tg"},
-			Usage:   "toggles whether or not to use the global git when creating a directory",
+			Name:    "changeAcct",
+			Aliases: []string{"ca"},
+			Usage:   "change the account tied to the Git repo",
 			Action: func(c *cli.Context) error {
-				// homeDir, err := homedir.Dir()
-				// checkErr(err)
+				ex, err := os.Executable()
+				checkErr(err)
+				exPath := path.Dir(ex)
 
-				// dirString := homeDir + "/.gogit"
-				// fileString := dirString + "/creds.json"
+				content := readFileIfExist(exPath + "/" + gitInfoPath)
 
-				// fmt.Println(useGlobalGitInfo)
-				// useGlobalGitInfo = !useGlobalGitInfo
-				// fmt.Println(useGlobalGitInfo)
+				fmt.Println(string(content))
+
 				return nil
 			},
 		},
