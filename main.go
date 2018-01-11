@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"strings"
 )
 
 var gitInfoPath = ".git/config"
@@ -192,8 +193,16 @@ func main() {
 				exPath := path.Dir(ex)
 
 				content := readFileIfExist(exPath + "/" + gitInfoPath)
+				sc := string(content)
+				ui := strings.Index(sc, "[user]")
 
-				fmt.Println(string(content))
+				// if the options for user in the git config exist, delete them
+				if ui != -1 {
+					sc = sc[:ui]
+					fmt.Println(sc)
+				}
+
+				// append the new user options to the git config
 
 				return nil
 			},
