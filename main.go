@@ -193,15 +193,19 @@ func main() {
 				exPath := path.Dir(ex)
 
 				content := readFileIfExist(exPath + "/" + gitInfoPath)
-				sc := string(content)
-				ui := strings.Index(sc, "[user]")
+				sc := content
+				ui := strings.Index(string(sc), "[user]")
 
 				// if the options for user in the git config exist, delete them
 				if ui != -1 {
 					sc = sc[:ui]
-					fmt.Println(sc)
 				}
 
+				sc = append([]byte(sc), fmt.Sprintf("[user]\n        name = %s\n        email = %s\n        password = %s", "Tyler", "cookies@gmail.com", "bananas")...)
+
+				ioutil.WriteFile(exPath+"/"+gitInfoPath, sc, 0766)
+
+				fmt.Println(string(sc))
 				// append the new user options to the git config
 
 				return nil
