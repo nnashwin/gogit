@@ -87,6 +87,10 @@ func readFileIfExist(path string) (content []byte) {
 	return
 }
 
+func createConfigString(name string, username string, password string) string {
+	return fmt.Sprintf("[user]\n        name = %s\n        email = %s\n        password = %s", name, username, password)
+}
+
 var Creds = struct {
 	MainProfile Profile                `json: "mainProfile"`
 	Profiles    map[string]interface{} `json: "profiles"`
@@ -201,7 +205,7 @@ func main() {
 					sc = sc[:ui]
 				}
 
-				sc = append([]byte(sc), fmt.Sprintf("[user]\n        name = %s\n        email = %s\n        password = %s", "Tyler", "cookies@gmail.com", "bananas")...)
+				sc = append([]byte(sc), createConfigString("cookies", "cake", "candies")...)
 
 				ioutil.WriteFile(exPath+"/"+gitInfoPath, sc, 0766)
 
