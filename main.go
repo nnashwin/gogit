@@ -37,54 +37,20 @@ func checkErr(e error) {
 	}
 }
 
-func fileDoesExist(path string) (bool, error) {
+func doesFileExist(path string) bool {
 	_, err := os.Stat(path)
-	if err == nil {
-		return true, nil
-	}
 
 	if os.IsNotExist(err) {
-		return false, nil
+		return false
 	}
-
-	return true, err
+	return true
 }
 
-func createDirIfNotExist(path string) (doesExist bool, err error) {
-	doesExist, err = fileDoesExist(path)
-
-	if doesExist == true {
-		return
-	}
-
-	err = os.Mkdir(path, 0766)
+func readFile(path string) (content []byte) {
+	content, err := ioutil.ReadFile(path)
 	checkErr(err)
 
-	return
-}
-
-func createCredDirIfNotExist(path string) (err error) {
-	doesExist, err := fileDoesExist(path)
-	checkErr(err)
-
-	if doesExist == false {
-		err = os.Mkdir(path, 0766)
-	}
-	return
-}
-
-func readFileIfExist(path string) (content []byte) {
-	// error handles later
-	doesExist, _ := fileDoesExist(path)
-
-	if doesExist == true {
-		content, err := ioutil.ReadFile(path)
-		checkErr(err)
-
-		return content
-	}
-
-	return
+	return content
 }
 
 func createConfigString(name string, username string, password string) string {
@@ -92,8 +58,8 @@ func createConfigString(name string, username string, password string) string {
 }
 
 var Creds = struct {
-	MainProfile Profile                `json: "mainProfile"`
-	Profiles    map[string]interface{} `json: "profiles"`
+	MainProfile Profile                `json: "mainProfile,omitempty"`
+	Profiles    map[string]interface{} `json: "profiles,omitempty"`
 }{}
 
 type Profile struct {
@@ -126,15 +92,27 @@ func main() {
 				checkErr(err)
 
 				dirString := homeDir + "/.gogit"
+
+				// create the dir if it doesn't exist
+				if doesFileExist(dirString) == false {
+					err = os.Mkdir(dirString, 0766)
+					checkErr(err)
+				}
+
 				fileString := dirString + "/creds.json"
 
-				err = createCredDirIfNotExist(dirString)
-				checkErr(err)
+				// create the file if it doesn't exists
+				if doesFileExist(fileString) == false {
+					_, err := os.Create(fileString)
+					checkErr(err)
+				}
 
-				content := readFileIfExist(fileString)
+				content := readFile(fileString)
 
-				err = json.Unmarshal(content, &Creds)
-				checkErr(err)
+				if len(content) > 0 {
+					err = json.Unmarshal(content, &Creds)
+					checkErr(err)
+				}
 
 				// If MainProfile doesn't exist, make the profile the MainProfile
 				if Creds.MainProfile == nilProfile {
@@ -169,7 +147,9 @@ func main() {
 				// create path from the current path + arguments
 				dirPath := exPath + "/" + c.Args().First()
 
-				doesExist, err := createDirIfNotExist(dirPath)
+				doesExist := doesFileExist(dirPath)
+				checkErr(err)
+
 				if doesExist == true {
 					fmt.Println("That directory already exists.  Please either delete the directory or try again")
 					return nil
@@ -196,7 +176,11 @@ func main() {
 				checkErr(err)
 				exPath := path.Dir(ex)
 
-				content := readFileIfExist(exPath + "/" + gitInfoPath)
+				if doesFileExist(exPath+"/"+gitInfoPath) == false {
+					fmt.Println("The config file in the .git folder does not exist, can not change the account attached")
+					return nil
+				}
+				content := readFile(exPath + "/" + gitInfoPath)
 				sc := content
 				ui := strings.Index(string(sc), "[user]")
 
@@ -207,10 +191,10 @@ func main() {
 
 				sc = append([]byte(sc), createConfigString("cookies", "cake", "candies")...)
 
+				fmt.Println(string(sc))
 				ioutil.WriteFile(exPath+"/"+gitInfoPath, sc, 0766)
 
 				fmt.Println(string(sc))
-				// append the new user options to the git config
 
 				return nil
 			},
