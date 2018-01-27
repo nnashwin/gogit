@@ -24,3 +24,19 @@ func TestCreateConfigString(t *testing.T) {
 		t.Fail()
 	}
 }
+
+func TestDoesFileExist(t *testing.T) {
+	expected := false
+	actual := doesFileExist("./cookies")
+
+	if actual != expected {
+		t.Fail()
+	}
+
+	expected = true
+	actual = doesFileExist("./main.go")
+
+	if actual != expected {
+		t.Fail()
+	}
+}
