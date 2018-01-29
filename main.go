@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/mitchellh/go-homedir"
 	"github.com/urfave/cli"
@@ -66,6 +67,10 @@ type Profile struct {
 	Name     string `json: name`
 	Username string `json: username`
 	Password string `json: password`
+}
+
+func getCredPathString(basePath string) string {
+	return basePath + "/.gogit/creds.json"
 }
 
 func main() {
@@ -172,6 +177,20 @@ func main() {
 			Aliases: []string{"ca"},
 			Usage:   "change the account tied to the Git repo",
 			Action: func(c *cli.Context) error {
+				homeDir, err := homedir.Dir()
+				checkErr(err)
+
+				credPath := getCredPathString(homeDir)
+
+				if doesFileExist(credPath) == false {
+					return errors.New("The cred file is empty.  Run the createDir command to add a main account")
+				}
+
+				creds := readFile(credPath)
+				err = json.Unmarshal(creds, &Creds)
+
+				fmt.Printf("%v", Creds.MainProfile)
+
 				ex, err := os.Executable()
 				checkErr(err)
 				exPath := path.Dir(ex)
@@ -189,12 +208,9 @@ func main() {
 					sc = sc[:ui]
 				}
 
-				sc = append([]byte(sc), createConfigString("cookies", "cake", "candies")...)
+				sc = append([]byte(sc), createConfigString(Creds.MainProfile.Name, Creds.MainProfile.Username, Creds.MainProfile.Password)...)
 
-				fmt.Println(string(sc))
 				ioutil.WriteFile(exPath+"/"+gitInfoPath, sc, 0766)
-
-				fmt.Println(string(sc))
 
 				return nil
 			},
