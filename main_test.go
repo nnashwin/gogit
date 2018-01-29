@@ -40,3 +40,12 @@ func TestDoesFileExist(t *testing.T) {
 		t.Fail()
 	}
 }
+
+func TestGetCredPathString(t *testing.T) {
+	expected := "./.gogit/creds.json"
+	actual := getCredPathString("./")
+
+	if actual != expected {
+		t.Fail()
+	}
+}
