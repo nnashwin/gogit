@@ -105,6 +105,10 @@ func main() {
 				err = json.Unmarshal(creds, &Creds)
 				checkErr(err)
 
+				if Creds.MainProfile == (Profile{}) {
+					fmt.Println("You currently have an empty Main Profile.  Run the addUser (au) command to create one.")
+				}
+
 				fmt.Printf("Your Main Profile:\n nick: %s\n username: %s\n name: %s", Creds.MainProfile.Nick, Creds.MainProfile.Nick, Creds.MainProfile.Name)
 
 				return nil
