@@ -18,6 +18,10 @@ var gitInfoPath = ".git/config"
 
 var qs = []*survey.Question{
 	{
+		Name:   "nick",
+		Prompt: &survey.Input{Message: "Please enter the name you want to store the account under"},
+	},
+	{
 		Name:   "name",
 		Prompt: &survey.Input{Message: "Please enter the name associated with the account"},
 	},
@@ -67,6 +71,7 @@ type Profile struct {
 	Name     string `json: name`
 	Username string `json: username`
 	Password string `json: password`
+	Nick     string `json: nick`
 }
 
 func getCredPathString(basePath string) string {
@@ -128,12 +133,14 @@ func main() {
 					Creds.Profiles = make(map[string]Profile)
 				}
 
-				Creds.Profiles[answers.Username] = answers
+				Creds.Profiles[answers.Nick] = answers
 
 				b, err := json.Marshal(Creds)
 				checkErr(err)
 
 				ioutil.WriteFile(fileString, b, 0766)
+
+				fmt.Printf("Profile \"%s\" added to the creds file", answers.Nick)
 
 				return nil
 			},
