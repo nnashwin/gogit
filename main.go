@@ -59,8 +59,8 @@ func createConfigString(name string, username string, password string) string {
 }
 
 var Creds = struct {
-	MainProfile Profile                `json: "mainProfile,omitempty"`
-	Profiles    map[string]interface{} `json: "profiles,omitempty"`
+	MainProfile Profile            `json: "mainProfile,omitempty"`
+	Profiles    map[string]Profile `json: "profiles,omitempty"`
 }{}
 
 type Profile struct {
@@ -125,7 +125,7 @@ func main() {
 				}
 
 				if Creds.Profiles == nil {
-					Creds.Profiles = make(map[string]interface{})
+					Creds.Profiles = make(map[string]Profile)
 				}
 
 				Creds.Profiles[answers.Username] = answers
@@ -189,8 +189,6 @@ func main() {
 				creds := readFile(credPath)
 				err = json.Unmarshal(creds, &Creds)
 
-				fmt.Printf("%v", Creds.MainProfile)
-
 				ex, err := os.Executable()
 				checkErr(err)
 				exPath := path.Dir(ex)
@@ -208,7 +206,15 @@ func main() {
 					sc = sc[:ui]
 				}
 
-				sc = append([]byte(sc), createConfigString(Creds.MainProfile.Name, Creds.MainProfile.Username, Creds.MainProfile.Password)...)
+				var profile Profile
+
+				if c.Args().First() == "" {
+					profile = Creds.MainProfile
+				} else {
+					profile = Creds.Profiles[c.Args().First()]
+				}
+
+				sc = append([]byte(sc), createConfigString(profile.Name, profile.Username, profile.Password)...)
 
 				ioutil.WriteFile(exPath+"/"+gitInfoPath, sc, 0766)
 
