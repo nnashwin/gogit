@@ -6,7 +6,7 @@
 5. DONE run git init in the directory where it is run
 6. DONE Change the json to support multiple profiles / accounts
 7. DONE add git credentials in the appropriate part of the gitconfig file which relate to the credentials stored in the golang application
-8. TODO Add command to use which ever profile you want in the .git/config
+8. DONE Add command to use which ever profile you want in the .git/config
 9. TODO add support to encrypt passwords for security sake
 10. TODO Add check to make sure emails are emails
 11. TODO Add command to delete profiles from the creds file
