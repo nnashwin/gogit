@@ -149,7 +149,7 @@ func main() {
 				b, err := json.Marshal(Creds)
 				checkErr(err)
 
-				ioutil.WriteFile(getCredPathString(homeDir), b, 0766)
+				ioutil.WriteFile(getCredPathString(homeDir), b, os.ModePerm)
 
 				fmt.Printf("Main Profile changed to %s", Creds.MainProfile.Nick)
 
@@ -174,7 +174,7 @@ func main() {
 
 				// create the dir if it doesn't exist
 				if doesFileExist(dirString) == false {
-					err = os.Mkdir(dirString, 0766)
+					err = os.Mkdir(dirString, os.ModePerm)
 					checkErr(err)
 				}
 
@@ -207,7 +207,7 @@ func main() {
 				b, err := json.Marshal(Creds)
 				checkErr(err)
 
-				ioutil.WriteFile(fileString, b, 0766)
+				ioutil.WriteFile(fileString, b, os.ModePerm)
 
 				fmt.Printf("Profile \"%s\" added to the creds file", answers.Nick)
 
@@ -218,7 +218,7 @@ func main() {
 		{
 			Name:    "createDir",
 			Aliases: []string{"cd"},
-			Usage:   "create a new git repo with your current stored git profile",
+			Usage:   "create a new git repo with your current Main Profile",
 			Action: func(c *cli.Context) error {
 				// get current path
 				ex, err := os.Executable()
@@ -236,6 +236,9 @@ func main() {
 					return nil
 				}
 
+				err = os.Mkdir(dirPath, os.ModePerm)
+				checkErr(err)
+
 				err = os.Chdir(dirPath)
 				checkErr(err)
 
@@ -243,6 +246,42 @@ func main() {
 
 				_, err = cmd.Output()
 				checkErr(err)
+
+				// get creds from the creds file
+				homeDir, err := homedir.Dir()
+				checkErr(err)
+
+				if doesFileExist(getCredPathString(homeDir)) == false {
+					fmt.Println("You currently do not have a cred file.  Run the addUser (au) command to configure a cred file")
+					return nil
+				}
+
+				creds := readFile(getCredPathString(homeDir))
+
+				err = json.Unmarshal(creds, &Creds)
+				checkErr(err)
+
+				if doesFileExist(dirPath+"/"+gitInfoPath) == false {
+					fmt.Println("The config file in the .git folder does not exist, can not change the account attached")
+					return nil
+				}
+				content := readFile(dirPath + "/" + gitInfoPath)
+
+				ui := strings.Index(string(content), "[user]")
+
+				// if the options for user in the git config exist, delete them
+				if ui != -1 {
+					content = content[:ui]
+				}
+
+				if Creds.MainProfile == (Profile{}) {
+					fmt.Println("There was a problem finding the Main Profile used to write the git config file.  Run the addUser (au) command and try again.")
+					return nil
+				}
+
+				content = append([]byte(content), createConfigString(Creds.MainProfile.Name, Creds.MainProfile.Username, Creds.MainProfile.Password)...)
+
+				ioutil.WriteFile(dirPath+"/"+gitInfoPath, content, os.ModePerm)
 
 				return nil
 			},
@@ -290,9 +329,15 @@ func main() {
 					profile = Creds.Profiles[c.Args().First()]
 				}
 
+				// add an empty check after the assignment in case either the Creds.MainProfile or the specific value of the map are empty
+				if profile == (Profile{}) {
+					fmt.Println("There was a problem finding the profile used to write the git config file.  Either change your Nick or Run the addUser (au) command and try again.")
+					return nil
+				}
+
 				sc = append([]byte(sc), createConfigString(profile.Name, profile.Username, profile.Password)...)
 
-				ioutil.WriteFile(exPath+"/"+gitInfoPath, sc, 0766)
+				ioutil.WriteFile(exPath+"/"+gitInfoPath, sc, os.ModePerm)
 
 				return nil
 			},
