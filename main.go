@@ -88,6 +88,29 @@ func main() {
 
 	app.Commands = []cli.Command{
 		{
+			Name:    "getMain",
+			Aliases: []string{"gm"},
+			Usage:   "get the current Main Profile in the creds file",
+			Action: func(c *cli.Context) error {
+				homeDir, err := homedir.Dir()
+				checkErr(err)
+
+				if doesFileExist(getCredPathString(homeDir)) == false {
+					fmt.Println("You currently do not have a cred file.  Run the addUser (au) command to configure a cred file")
+					return nil
+				}
+
+				creds := readFile(getCredPathString(homeDir))
+
+				err = json.Unmarshal(creds, &Creds)
+				checkErr(err)
+
+				fmt.Printf("Your Main Profile:\n nick: %s\n username: %s\n name: %s", Creds.MainProfile.Nick, Creds.MainProfile.Nick, Creds.MainProfile.Name)
+
+				return nil
+			},
+		},
+		{
 			Name:    "addUser",
 			Aliases: []string{"au"},
 			Usage:   "add a new github user account",
