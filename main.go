@@ -115,6 +115,47 @@ func main() {
 				return nil
 			},
 		},
+
+		{
+			Name:    "changeMain",
+			Aliases: []string{"cm"},
+			Usage:   "change the current Main Profile to a different Profile in the creds file",
+			Action: func(c *cli.Context) error {
+				homeDir, err := homedir.Dir()
+				checkErr(err)
+
+				if doesFileExist(getCredPathString(homeDir)) == false {
+					fmt.Println("You currently do not have a cred file.  Run the addUser (au) command to configure a cred file")
+					return nil
+				}
+
+				creds := readFile(getCredPathString(homeDir))
+
+				err = json.Unmarshal(creds, &Creds)
+				checkErr(err)
+
+				if Creds.MainProfile == (Profile{}) {
+					fmt.Println("You currently have an empty Main Profile.  Run the addUser (au) command to create one.")
+					return nil
+				}
+
+				if Creds.Profiles[c.Args().First()] == (Profile{}) {
+					fmt.Printf("There is no profile stored under the nickname %s, please either create a new user or use a different nickname", c.Args().First())
+					return nil
+				}
+
+				Creds.MainProfile = Creds.Profiles[c.Args().First()]
+
+				b, err := json.Marshal(Creds)
+				checkErr(err)
+
+				ioutil.WriteFile(getCredPathString(homeDir), b, 0766)
+
+				fmt.Printf("Main Profile changed to %s", Creds.MainProfile.Nick)
+
+				return nil
+			},
+		},
 		{
 			Name:    "addUser",
 			Aliases: []string{"au"},
