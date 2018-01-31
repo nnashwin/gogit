@@ -10,7 +10,6 @@ import (
 	"io/ioutil"
 	"os"
 	"os/exec"
-	"path"
 	"strings"
 )
 
@@ -82,7 +81,7 @@ func main() {
 	app := cli.NewApp()
 
 	app.Action = func(c *cli.Context) error {
-		fmt.Println("Hello friend!")
+		fmt.Println("Welcome to Gogit!  Add a git credential (gogit au) to begin!!")
 		return nil
 	}
 
@@ -96,8 +95,7 @@ func main() {
 				checkErr(err)
 
 				if doesFileExist(getCredPathString(homeDir)) == false {
-					fmt.Println("You currently do not have a cred file.  Run the addUser (au) command to configure a cred file")
-					return nil
+					return errors.New("You currently do not have a cred file.  Run the addUser (au) command to configure a cred file")
 				}
 
 				creds := readFile(getCredPathString(homeDir))
@@ -106,8 +104,7 @@ func main() {
 				checkErr(err)
 
 				if Creds.MainProfile == (Profile{}) {
-					fmt.Println("You currently have an empty Main Profile.  Run the addUser (au) command to create one.")
-					return nil
+					return errors.New("You currently have an empty Main Profile.  Run the addUser (au) command to create one.")
 				}
 
 				fmt.Printf("Your Main Profile:\n nick: %s\n username: %s\n name: %s", Creds.MainProfile.Nick, Creds.MainProfile.Nick, Creds.MainProfile.Name)
@@ -125,8 +122,7 @@ func main() {
 				checkErr(err)
 
 				if doesFileExist(getCredPathString(homeDir)) == false {
-					fmt.Println("You currently do not have a cred file.  Run the addUser (au) command to configure a cred file")
-					return nil
+					return errors.New("You currently do not have a cred file.  Run the addUser (au) command to configure a cred file")
 				}
 
 				creds := readFile(getCredPathString(homeDir))
@@ -135,13 +131,11 @@ func main() {
 				checkErr(err)
 
 				if Creds.MainProfile == (Profile{}) {
-					fmt.Println("You currently have an empty Main Profile.  Run the addUser (au) command to create one.")
-					return nil
+					return errors.New("You currently have an empty Main Profile.  Run the addUser (au) command to create one.")
 				}
 
 				if Creds.Profiles[c.Args().First()] == (Profile{}) {
-					fmt.Printf("There is no profile stored under the nickname %s, please either create a new user or use a different nickname", c.Args().First())
-					return nil
+					return errors.New(fmt.Sprintf("There is no profile stored under the nickname %s, please either create a new user or use a different nickname", c.Args().First()))
 				}
 
 				Creds.MainProfile = Creds.Profiles[c.Args().First()]
@@ -221,19 +215,17 @@ func main() {
 			Usage:   "create a new git repo with your current Main Profile",
 			Action: func(c *cli.Context) error {
 				// get current path
-				ex, err := os.Executable()
+				wd, err := os.Getwd()
 				checkErr(err)
-				exPath := path.Dir(ex)
 
 				// create path from the current path + arguments
-				dirPath := exPath + "/" + c.Args().First()
+				dirPath := wd + "/" + c.Args().First()
 
 				doesExist := doesFileExist(dirPath)
 				checkErr(err)
 
 				if doesExist == true {
-					fmt.Println("That directory already exists.  Please either delete the directory or try again")
-					return nil
+					return errors.New("That directory already exists.  Please either delete the directory or try again")
 				}
 
 				err = os.Mkdir(dirPath, os.ModePerm)
@@ -252,8 +244,7 @@ func main() {
 				checkErr(err)
 
 				if doesFileExist(getCredPathString(homeDir)) == false {
-					fmt.Println("You currently do not have a cred file.  Run the addUser (au) command to configure a cred file")
-					return nil
+					return errors.New("You currently do not have a cred file.  Run the addUser (au) command to configure a cred file")
 				}
 
 				creds := readFile(getCredPathString(homeDir))
@@ -262,8 +253,7 @@ func main() {
 				checkErr(err)
 
 				if doesFileExist(dirPath+"/"+gitInfoPath) == false {
-					fmt.Println("The config file in the .git folder does not exist, can not change the account attached")
-					return nil
+					return errors.New("The config file in the .git folder does not exist, can not change the account attached")
 				}
 				content := readFile(dirPath + "/" + gitInfoPath)
 
@@ -275,8 +265,7 @@ func main() {
 				}
 
 				if Creds.MainProfile == (Profile{}) {
-					fmt.Println("There was a problem finding the Main Profile used to write the git config file.  Run the addUser (au) command and try again.")
-					return nil
+					return errors.New("There was a problem finding the Main Profile used to write the git config file.  Run the addUser (au) command and try again.")
 				}
 
 				content = append([]byte(content), createConfigString(Creds.MainProfile.Name, Creds.MainProfile.Username, Creds.MainProfile.Password)...)
@@ -304,15 +293,13 @@ func main() {
 				creds := readFile(credPath)
 				err = json.Unmarshal(creds, &Creds)
 
-				ex, err := os.Executable()
+				wd, err := os.Getwd()
 				checkErr(err)
-				exPath := path.Dir(ex)
 
-				if doesFileExist(exPath+"/"+gitInfoPath) == false {
-					fmt.Println("The config file in the .git folder does not exist, can not change the account attached")
-					return nil
+				if doesFileExist(wd+"/"+gitInfoPath) == false {
+					return errors.New("The config file in the .git folder does not exist, can not change the account attached")
 				}
-				content := readFile(exPath + "/" + gitInfoPath)
+				content := readFile(wd + "/" + gitInfoPath)
 				sc := content
 				ui := strings.Index(string(sc), "[user]")
 
@@ -331,13 +318,12 @@ func main() {
 
 				// add an empty check after the assignment in case either the Creds.MainProfile or the specific value of the map are empty
 				if profile == (Profile{}) {
-					fmt.Println("There was a problem finding the profile used to write the git config file.  Either change your Nick or Run the addUser (au) command and try again.")
-					return nil
+					return errors.New("There was a problem finding the profile used to write the git config file.  Either change your Nick or Run the addUser (au) command and try again.")
 				}
 
 				sc = append([]byte(sc), createConfigString(profile.Name, profile.Username, profile.Password)...)
 
-				ioutil.WriteFile(exPath+"/"+gitInfoPath, sc, os.ModePerm)
+				ioutil.WriteFile(wd+"/"+gitInfoPath, sc, os.ModePerm)
 
 				return nil
 			},
