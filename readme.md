@@ -1,5 +1,5 @@
 # gogit - A tool to keep committed to open source while at work
-CLI [![Build Status] (https://travis-ci.org/ru-lai/gogit.svg?branch=master)]
+[![Build Status](https://travis-ci.org/ru-lai/gogit.svg?branch=master)](https://travis-ci.org/ru-lai/gogit)
 
 https://travis-ci.org/ru-lai/gogit.svg?branch=master
 
