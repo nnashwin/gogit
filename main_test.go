@@ -43,7 +43,7 @@ func TestDoesFileExist(t *testing.T) {
 
 func TestGetCredPathString(t *testing.T) {
 	expected := "./.gogit/creds.json"
-	actual := getCredPathString("./")
+	actual := GetCredPathString(".")
 
 	if actual != expected {
 		t.Fail()

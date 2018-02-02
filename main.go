@@ -73,7 +73,7 @@ type Profile struct {
 	Nick     string `json: nick`
 }
 
-func getCredPathString(basePath string) string {
+func GetCredPathString(basePath string) string {
 	return basePath + "/.gogit/creds.json"
 }
 
@@ -94,11 +94,11 @@ func main() {
 				homeDir, err := homedir.Dir()
 				checkErr(err)
 
-				if doesFileExist(getCredPathString(homeDir)) == false {
+				if doesFileExist(GetCredPathString(homeDir)) == false {
 					return errors.New("You currently do not have a cred file.  Run the addUser (au) command to configure a cred file")
 				}
 
-				creds := readFile(getCredPathString(homeDir))
+				creds := readFile(GetCredPathString(homeDir))
 
 				err = json.Unmarshal(creds, &Creds)
 				checkErr(err)
@@ -121,11 +121,11 @@ func main() {
 				homeDir, err := homedir.Dir()
 				checkErr(err)
 
-				if doesFileExist(getCredPathString(homeDir)) == false {
+				if doesFileExist(GetCredPathString(homeDir)) == false {
 					return errors.New("You currently do not have a cred file.  Run the addUser (au) command to configure a cred file")
 				}
 
-				creds := readFile(getCredPathString(homeDir))
+				creds := readFile(GetCredPathString(homeDir))
 
 				err = json.Unmarshal(creds, &Creds)
 				checkErr(err)
@@ -143,7 +143,7 @@ func main() {
 				b, err := json.Marshal(Creds)
 				checkErr(err)
 
-				ioutil.WriteFile(getCredPathString(homeDir), b, os.ModePerm)
+				ioutil.WriteFile(GetCredPathString(homeDir), b, os.ModePerm)
 
 				fmt.Printf("Main Profile changed to %s", Creds.MainProfile.Nick)
 
@@ -243,11 +243,11 @@ func main() {
 				homeDir, err := homedir.Dir()
 				checkErr(err)
 
-				if doesFileExist(getCredPathString(homeDir)) == false {
+				if doesFileExist(GetCredPathString(homeDir)) == false {
 					return errors.New("You currently do not have a cred file.  Run the addUser (au) command to configure a cred file")
 				}
 
-				creds := readFile(getCredPathString(homeDir))
+				creds := readFile(GetCredPathString(homeDir))
 
 				err = json.Unmarshal(creds, &Creds)
 				checkErr(err)
@@ -284,7 +284,7 @@ func main() {
 				homeDir, err := homedir.Dir()
 				checkErr(err)
 
-				credPath := getCredPathString(homeDir)
+				credPath := GetCredPathString(homeDir)
 
 				if doesFileExist(credPath) == false {
 					return errors.New("The cred file is empty.  Run the createDir command to add a main account")
