@@ -1,20 +1,4 @@
 language: go
 
 go:
-    - 1.6
-    - 1.7
-    - master
-
-branches:
-    only:
-        - master
-
-install:
-    - go get
-
-    notifications:
-        email:
-            on_success: change
-            on_failure: always
-
-script: go test ./
+  - 1.6
