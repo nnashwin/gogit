@@ -15,12 +15,13 @@ $ go get github.com/ru-lai/gogit
 ```
 $ cd goDir/src/github.com/ru-lai/gogit
 ```
-6.
+and
 ```
-go install
+$ go install
 ```
 
 You should now be able to run the gogit command from the command line.
+
 
 ## Left TODO
 Todos are in the Todo.md file
