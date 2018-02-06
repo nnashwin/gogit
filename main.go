@@ -72,6 +72,15 @@ func GetCredPathString(basePath string) string {
 
 func main() {
 	app := cli.NewApp()
+	app.Name = "gogit"
+	app.Version = "0.1.0"
+	app.Usage = "a tool to change the git profile of a particular repo"
+	app.Authors = []cli.Author{
+		cli.Author{
+			Name:  "Tyler Boright",
+			Email: "ru.lai.development@gmail.com",
+		},
+	}
 
 	app.Action = func(c *cli.Context) error {
 		fmt.Println("Welcome to Gogit!  Add a git credential (gogit au) to begin!!")
