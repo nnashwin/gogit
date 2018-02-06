@@ -66,13 +66,6 @@ var Creds = struct {
 	Profiles    map[string]Profile `json: "profiles,omitempty"`
 }{}
 
-type Profile struct {
-	Name     string `json: name`
-	Username string `json: username`
-	Password string `json: password`
-	Nick     string `json: nick`
-}
-
 func GetCredPathString(basePath string) string {
 	return basePath + "/.gogit/creds.json"
 }
