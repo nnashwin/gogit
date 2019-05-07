@@ -29,3 +29,7 @@ If your GOBIN is set up incorrectly, or if the GOPATH/bin directory is not inclu
 
 ## Left TODO
 Todos are in the Todo.md file
+
+## License
+
+MIT © Tyler Boright
