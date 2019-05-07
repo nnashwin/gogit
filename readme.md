@@ -23,6 +23,9 @@ $ go install
 
 You should now be able to run the gogit command from the command line.
 
+## Note
+If your GOBIN is set up incorrectly, or if the GOPATH/bin directory is not included in the path of your shell, you will not have access to golang built repositories.
+
 
 ## Left TODO
 Todos are in the Todo.md file
