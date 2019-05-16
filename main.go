@@ -1,16 +1,19 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/mitchellh/go-homedir"
-	"github.com/urfave/cli"
-	"gopkg.in/AlecAivazis/survey.v1"
 	"io/ioutil"
 	"os"
 	"os/exec"
 	"strings"
+	"text/template"
+
+	"github.com/mitchellh/go-homedir"
+	"github.com/urfave/cli"
+	"gopkg.in/AlecAivazis/survey.v1"
 )
 
 var gitInfoPath = ".git/config"
@@ -34,6 +37,11 @@ var qs = []*survey.Question{
 		Prompt: &survey.Password{Message: "Please enter your github password or api token"},
 	},
 }
+
+const listProfileTmpl = `- Git Username: {{.Username}}
+  Name: {{.Name}}
+  Gogit Nickname: {{.Nick}}
+`
 
 func checkErr(e error) {
 	if e != nil {
@@ -109,7 +117,7 @@ func main() {
 					return errors.New("You currently have an empty Main Profile.  Run the addUser (au) command to create one.")
 				}
 
-				fmt.Printf("Your Main Profile:\n nick: %s\n username: %s\n name: %s", Creds.MainProfile.Nick, Creds.MainProfile.Nick, Creds.MainProfile.Name)
+				fmt.Printf("Your Main Profile:\n nick: %s\n git username: %s\n name: %s", Creds.MainProfile.Nick, Creds.MainProfile.Username, Creds.MainProfile.Name)
 
 				return nil
 			},
@@ -326,6 +334,52 @@ func main() {
 				sc = append([]byte(sc), createConfigString(profile.Name, profile.Username, profile.Password)...)
 
 				ioutil.WriteFile(wd+"/"+gitInfoPath, sc, os.ModePerm)
+
+				return nil
+			},
+		},
+
+		{
+			Name:    "listProfiles",
+			Aliases: []string{"lp"},
+			Usage:   "list all git profiles you can use",
+			Action: func(c *cli.Context) error {
+				homeDir, err := homedir.Dir()
+				checkErr(err)
+
+				credPath := GetCredPathString(homeDir)
+
+				if doesFileExist(credPath) == false {
+					return errors.New("The cred file is empty.  Run the createDir command to add a main account")
+				}
+
+				creds := readFile(credPath)
+				err = json.Unmarshal(creds, &Creds)
+				checkErr(err)
+
+				keys := []string{}
+				for key, _ := range Creds.Profiles {
+					keys = append(keys, key)
+				}
+
+				fmt.Println("Printing out your profiles:\n")
+				t := template.Must(template.New("ListProfiles").Parse(listProfileTmpl))
+
+				for _, key := range keys {
+					buf := &bytes.Buffer{}
+
+					data := map[string]interface{}{
+						"Nick":     key,
+						"Username": Creds.Profiles[key].Username,
+						"Name":     Creds.Profiles[key].Name,
+					}
+
+					if err := t.Execute(buf, data); err != nil {
+						checkErr(err)
+					}
+
+					fmt.Println(buf.String())
+				}
 
 				return nil
 			},
