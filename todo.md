@@ -11,6 +11,7 @@ DONE Add command to use which ever profile you want in the .git/config
 DONE Add command to query the main profile
 DONE Add command to change the main profile to another profile in the credentials
 DONE Update readme to be more accessible
+DONE Add command to list all profiles
 TODO Add travis cli to the project to run tests
 TODO Add command to delete profiles from the creds file
 TODO add support to encrypt passwords for security sake
