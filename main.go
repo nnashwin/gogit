@@ -83,8 +83,8 @@ func main() {
 	app.Name = "gogit"
 	app.Version = "0.1.0"
 	app.Usage = "a tool to change the git profile of a particular repo"
-	app.Authors = []cli.Author{
-		cli.Author{
+	app.Authors = []*cli.Author{
+		&cli.Author{
 			Name:  "Tyler Boright",
 			Email: "ru.lai.development@gmail.com",
 		},
@@ -95,7 +95,7 @@ func main() {
 		return nil
 	}
 
-	app.Commands = []cli.Command{
+	app.Commands = []*cli.Command{
 		{
 			Name:    "getMain",
 			Aliases: []string{"gm"},
